@@ -9,6 +9,13 @@
     <title>미타 퀴즈쇼</title>
 </head>
 <body>
+
+    {% if name.name is None %}
+    사용자 없음. 로그인으로.
+    <meta http-equiv='refresh' content='0;url=/login'>
+    {% else %}
+    {{name.name}}
+
     <p id="timer"></p> <br>
     <div id="question"></div>
     <button id="first_exam" type="button" onclick="checkAnswer(1)"></button><br>
@@ -38,7 +45,7 @@
         var answers = [{% for x in quizs %}'{{ x.answer|escapejs }}',{% endfor %}]
 
         function checkAnswer(answer) {
-            if (answer == answers[number-1]) {
+            if (answer == answers[current_number-1]) {
                 is_right = true
             }
         }
@@ -94,7 +101,7 @@
             console.log('onmessage : ' + number)
             current_number = number
 
-            if (number == 10) {
+            if (number == 11) {
                 goToResult()
             } else {
                 goToNextQuiz(number)
@@ -106,5 +113,7 @@
         }
 
     </script>
+    {% endif %}
+
 </body>
 </html>
