@@ -1,0 +1,96 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'main/style.css' %}" />
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>미타 퀴즈쇼</title>
+</head>
+<body>
+    <p id="timer"></p> <br>
+    <div id="question"></div>
+    <button id="first_exam" type="button" onclick="checkAnswer(1)"></button><br>
+    <button id="second_exam" type="button" onclick="checkAnswer(2)"></button><br>
+    <button id="third_exam" type="button" onclick="checkAnswer(3)"></button><br>
+
+    <form id="end" action="result/" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="right" id="right" />
+        <input type="hidden" name="wrong" id="wrong" />
+    </form>
+
+    <script>
+        var is_right = false
+        var interval = null
+
+        var number = 0
+        var number_of_right = 0
+        var number_of_wrong = 0
+
+        var questions = [{% for x in quizs %}'{{ x.question|escapejs }}',{% endfor %}]
+        var first_exams = [{% for x in quizs %}'{{ x.first_exam|escapejs }}',{% endfor %}]
+        var second_exams = [{% for x in quizs %}'{{ x.second_exam|escapejs }}',{% endfor %}]
+        var third_exams = [{% for x in quizs %}'{{ x.third_exam|escapejs }}',{% endfor %}]
+        var answers = [{% for x in quizs %}'{{ x.answer|escapejs }}',{% endfor %}]
+
+        function checkAnswer(answer) {
+            if (answer == answers[number-1]) {
+                is_right = true
+            }
+        }
+
+        function goToNextQuiz() {
+            initVar()
+            changeQuiz()
+            startTimer()
+        }
+
+        function initVar() {
+            number = number + 1
+            is_right = false
+        }
+
+        function changeQuiz() {
+            document.getElementById("question").innerHTML = "Q" + number + ". " + questions[number-1]
+            document.getElementById("first_exam").innerHTML = "1. " + first_exams[number-1]
+            document.getElementById("second_exam").innerHTML = "2. " + second_exams[number-1]
+            document.getElementById("third_exam").innerHTML = "3. " + third_exams[number-1]
+        }
+
+        function startTimer() {
+            var distance = 2
+            var interval_time = 1000
+
+            interval = setInterval(function() {
+              distance = distance - 1
+              document.getElementById("timer").innerHTML = distance
+            }, interval_time)
+
+            setTimeout(endTimer, distance * interval_time)
+        }
+
+        function endTimer() {
+            clearInterval(interval)
+            console.log(number + "------" + is_right)
+            is_right ? number_of_right++ : number_of_wrong++
+
+            if (number == 10) {
+                goToResult()
+            } else {
+                goToNextQuiz()
+            }
+        }
+
+        function goToResult() {
+            document.getElementById("right").value = number_of_right
+            document.getElementById("wrong").value = number_of_wrong
+            document.getElementById("end").submit()
+        }
+
+        goToNextQuiz()
+
+    </script>
+</body>
+</html>
