@@ -60,7 +60,7 @@
         }
 
         function startTimer() {
-            var distance = 2
+            var distance = 11
             var interval_time = 1000
 
             interval = setInterval(function() {
@@ -79,6 +79,7 @@
             if (number == 10) {
                 goToResult()
             } else {
+                sendMessage("next number : " + number)
                 goToNextQuiz()
             }
         }
@@ -90,6 +91,27 @@
         }
 
         goToNextQuiz()
+
+
+
+        var chatSocket = new WebSocket('ws://' + window.location.host + '/ws/main/');
+
+        chatSocket.onmessage = function(e) {
+            var data = JSON.parse(e.data)
+            var message = data['message']
+            console.log('onmessage : ' + message)
+        }
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly')
+        }
+
+        function sendMessage(message) {
+            console.log(message)
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }))
+        }
 
     </script>
 </body>
