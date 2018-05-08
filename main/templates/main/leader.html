@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>문제 출제</title>
+</head>
+<body>
+    <button onclick="goToNext()">다음 문제로</button>
+
+    <script>
+        var number = 0
+        var chatSocket = new WebSocket('ws://' + window.location.host + '/ws/main/');
+
+        function goToNext() {
+            number++
+            chatSocket.send(JSON.stringify({
+                'message': number
+            }))
+        }
+    </script>
+</body>
+</html>

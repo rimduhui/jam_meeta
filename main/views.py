@@ -11,5 +11,9 @@ class Main(generic.ListView):
         return Quiz.objects.order_by('number')
 
 
+def leader(request):
+    return render(request, "main/leader.html")
+
+
 def result(request):
     return render(request, "main/result.html", {'result': request.POST})

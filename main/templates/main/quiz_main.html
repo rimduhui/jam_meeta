@@ -13,7 +13,9 @@
     <div id="question"></div>
     <button id="first_exam" type="button" onclick="checkAnswer(1)"></button><br>
     <button id="second_exam" type="button" onclick="checkAnswer(2)"></button><br>
-    <button id="third_exam" type="button" onclick="checkAnswer(3)"></button><br>
+    <button id="third_exam" type="button" onclick="checkAnswer(3)"></button><br><br><br>
+
+    <div id="answer"></div>
 
     <form id="end" action="result/" method="post">
         {% csrf_token %}
@@ -22,10 +24,10 @@
     </form>
 
     <script>
+        var current_number = 0
         var is_right = false
         var interval = null
 
-        var number = 0
         var number_of_right = 0
         var number_of_wrong = 0
 
@@ -41,18 +43,18 @@
             }
         }
 
-        function goToNextQuiz() {
+        function goToNextQuiz(number) {
             initVar()
-            changeQuiz()
+            changeQuiz(number)
             startTimer()
         }
 
         function initVar() {
-            number = number + 1
             is_right = false
+            document.getElementById("answer").innerHTML = ""
         }
 
-        function changeQuiz() {
+        function changeQuiz(number) {
             document.getElementById("question").innerHTML = "Q" + number + ". " + questions[number-1]
             document.getElementById("first_exam").innerHTML = "1. " + first_exams[number-1]
             document.getElementById("second_exam").innerHTML = "2. " + second_exams[number-1]
@@ -73,15 +75,9 @@
 
         function endTimer() {
             clearInterval(interval)
-            console.log(number + "------" + is_right)
             is_right ? number_of_right++ : number_of_wrong++
 
-            if (number == 10) {
-                goToResult()
-            } else {
-                sendMessage("next number : " + number)
-                goToNextQuiz()
-            }
+            document.getElementById("answer").innerHTML = answers[current_number-1]
         }
 
         function goToResult() {
@@ -90,27 +86,23 @@
             document.getElementById("end").submit()
         }
 
-        goToNextQuiz()
-
-
-
         var chatSocket = new WebSocket('ws://' + window.location.host + '/ws/main/');
 
         chatSocket.onmessage = function(e) {
             var data = JSON.parse(e.data)
-            var message = data['message']
-            console.log('onmessage : ' + message)
+            var number = data['message']
+            console.log('onmessage : ' + number)
+            current_number = number
+
+            if (number == 10) {
+                goToResult()
+            } else {
+                goToNextQuiz(number)
+            }
         }
 
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly')
-        }
-
-        function sendMessage(message) {
-            console.log(message)
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }))
         }
 
     </script>
