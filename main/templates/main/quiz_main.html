@@ -16,13 +16,15 @@
     {% else %}
     {{name.name}}
 
-    <p id="timer"></p> <br>
+    <p id="timer"></p> Timer <br>
     <div id="question"></div>
-    <button id="first_exam" type="button" onclick="checkAnswer(1)"></button><br>
-    <button id="second_exam" type="button" onclick="checkAnswer(2)"></button><br>
-    <button id="third_exam" type="button" onclick="checkAnswer(3)"></button><br><br><br>
+    <div id="first_exam" type="button" onclick="checkAnswer(1)"></div><br>
+    <div id="second_exam" type="button" onclick="checkAnswer(2)"></div><br>
+    <div id="third_exam" type="button" onclick="checkAnswer(3)"></div><br><br>
 
-    <div id="answer"></div>
+    <div id="user_answer"></div><br>
+    <div id="answer"></div><br>
+    <div id="result"></div><br>
 
     <form id="end" action="result/" method="post">
         {% csrf_token %}
@@ -32,6 +34,7 @@
 
     <script>
         var current_number = 0
+        var is_selected = false
         var is_right = false
         var interval = null
 
@@ -45,6 +48,13 @@
         var answers = [{% for x in quizs %}'{{ x.answer|escapejs }}',{% endfor %}]
 
         function checkAnswer(answer) {
+            if (is_selected) {
+                return
+            }
+
+            is_selected = true
+            document.getElementById("user_answer").innerHTML = "당신의 답 : " + answer
+
             if (answer == answers[current_number-1]) {
                 is_right = true
             }
@@ -58,7 +68,10 @@
 
         function initVar() {
             is_right = false
+            is_selected = false
+            document.getElementById("user_answer").innerHTML = ""
             document.getElementById("answer").innerHTML = ""
+            document.getElementById("result").innerHTML = ""
         }
 
         function changeQuiz(number) {
@@ -85,6 +98,12 @@
             is_right ? number_of_right++ : number_of_wrong++
 
             document.getElementById("answer").innerHTML = answers[current_number-1]
+            if (is_right) {
+                document.getElementById("result").innerHTML = "맞았습니다!"
+            } else {
+                document.getElementById("result").innerHTML = "땡!"
+            }
+
         }
 
         function goToResult() {
