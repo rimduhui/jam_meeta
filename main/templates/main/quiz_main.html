@@ -14,17 +14,16 @@
     사용자 없음. 로그인으로.
     <meta http-equiv='refresh' content='0;url=/login'>
     {% else %}
-    {{name.name}}
 
-    <p id="timer"></p> Timer <br>
-    <div id="question"></div>
-    <div id="first_exam" type="button" onclick="checkAnswer(1)"></div><br>
-    <div id="second_exam" type="button" onclick="checkAnswer(2)"></div><br>
-    <div id="third_exam" type="button" onclick="checkAnswer(3)"></div><br><br>
+    <div>{{name.name}}</div>
+    <div id="timer">Timer</div>
 
-    <div id="user_answer"></div><br>
-    <div id="answer"></div><br>
-    <div id="result"></div><br>
+    <p class="question" id="question"></p>
+    <div class="exam" id="exam1" type="button" onclick="checkAnswer(1)"></div>
+    <div class="exam" id="exam2" type="button" onclick="checkAnswer(2)"></div>
+    <div class="exam" id="exam3" type="button" onclick="checkAnswer(3)"></div>
+
+    <p id="result"></p>
 
     <form id="end" action="result/" method="post">
         {% csrf_token %}
@@ -53,7 +52,8 @@
             }
 
             is_selected = true
-            document.getElementById("user_answer").innerHTML = "당신의 답 : " + answer
+            console.log("checkAnswer : " + answer)
+            document.getElementById("exam"+answer).style.backgroundColor = "lightblue"
 
             if (answer == answers[current_number-1]) {
                 is_right = true
@@ -69,16 +69,17 @@
         function initVar() {
             is_right = false
             is_selected = false
-            document.getElementById("user_answer").innerHTML = ""
-            document.getElementById("answer").innerHTML = ""
+            document.getElementById("exam1").style.backgroundColor = "#e0e0e0"
+            document.getElementById("exam2").style.backgroundColor = "#e0e0e0"
+            document.getElementById("exam3").style.backgroundColor = "#e0e0e0"
             document.getElementById("result").innerHTML = ""
         }
 
         function changeQuiz(number) {
             document.getElementById("question").innerHTML = "Q" + number + ". " + questions[number-1]
-            document.getElementById("first_exam").innerHTML = "1. " + first_exams[number-1]
-            document.getElementById("second_exam").innerHTML = "2. " + second_exams[number-1]
-            document.getElementById("third_exam").innerHTML = "3. " + third_exams[number-1]
+            document.getElementById("exam1").innerHTML = "1. " + first_exams[number-1]
+            document.getElementById("exam2").innerHTML = "2. " + second_exams[number-1]
+            document.getElementById("exam3").innerHTML = "3. " + third_exams[number-1]
         }
 
         function startTimer() {
@@ -96,14 +97,8 @@
         function endTimer() {
             clearInterval(interval)
             is_right ? number_of_right++ : number_of_wrong++
-
-            document.getElementById("answer").innerHTML = answers[current_number-1]
-            if (is_right) {
-                document.getElementById("result").innerHTML = "맞았습니다!"
-            } else {
-                document.getElementById("result").innerHTML = "땡!"
-            }
-
+            document.getElementById("exam"+answers[current_number-1]).style.backgroundColor = "orange"
+            document.getElementById("result").innerHTML = is_right ? "맞았습니다" : "틀렸습니다"
         }
 
         function goToResult() {
