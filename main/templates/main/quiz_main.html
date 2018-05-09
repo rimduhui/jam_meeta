@@ -1,0 +1,133 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'main/style.css' %}" />
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>미타 퀴즈쇼</title>
+</head>
+<body>
+
+    {% if name.name is None %}
+    사용자 없음. 로그인으로.
+    <meta http-equiv='refresh' content='0;url=/login'>
+    {% else %}
+
+    <div>{{name.name}}</div>
+    <div id="timer">Timer</div>
+
+    <p class="question" id="question"></p>
+    <div class="exam" id="exam1" type="button" onclick="checkAnswer(1)"></div>
+    <div class="exam" id="exam2" type="button" onclick="checkAnswer(2)"></div>
+    <div class="exam" id="exam3" type="button" onclick="checkAnswer(3)"></div>
+
+    <p id="result"></p>
+
+    <form id="end" action="result/" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="right" id="right" />
+        <input type="hidden" name="wrong" id="wrong" />
+    </form>
+
+    <script>
+        var current_number = 0
+        var is_selected = false
+        var is_right = false
+        var interval = null
+
+        var number_of_right = 0
+        var number_of_wrong = 0
+
+        var questions = [{% for x in quizs %}'{{ x.question|escapejs }}',{% endfor %}]
+        var first_exams = [{% for x in quizs %}'{{ x.first_exam|escapejs }}',{% endfor %}]
+        var second_exams = [{% for x in quizs %}'{{ x.second_exam|escapejs }}',{% endfor %}]
+        var third_exams = [{% for x in quizs %}'{{ x.third_exam|escapejs }}',{% endfor %}]
+        var answers = [{% for x in quizs %}'{{ x.answer|escapejs }}',{% endfor %}]
+
+        function checkAnswer(answer) {
+            if (is_selected) {
+                return
+            }
+
+            is_selected = true
+            console.log("checkAnswer : " + answer)
+            document.getElementById("exam"+answer).style.backgroundColor = "lightblue"
+
+            if (answer == answers[current_number-1]) {
+                is_right = true
+            }
+        }
+
+        function goToNextQuiz(number) {
+            initVar()
+            changeQuiz(number)
+            startTimer()
+        }
+
+        function initVar() {
+            is_right = false
+            is_selected = false
+            document.getElementById("exam1").style.backgroundColor = "#e0e0e0"
+            document.getElementById("exam2").style.backgroundColor = "#e0e0e0"
+            document.getElementById("exam3").style.backgroundColor = "#e0e0e0"
+            document.getElementById("result").innerHTML = ""
+        }
+
+        function changeQuiz(number) {
+            document.getElementById("question").innerHTML = "Q" + number + ". " + questions[number-1]
+            document.getElementById("exam1").innerHTML = "1. " + first_exams[number-1]
+            document.getElementById("exam2").innerHTML = "2. " + second_exams[number-1]
+            document.getElementById("exam3").innerHTML = "3. " + third_exams[number-1]
+        }
+
+        function startTimer() {
+            var distance = 11
+            var interval_time = 1000
+
+            interval = setInterval(function() {
+              distance = distance - 1
+              document.getElementById("timer").innerHTML = distance
+            }, interval_time)
+
+            setTimeout(endTimer, distance * interval_time)
+        }
+
+        function endTimer() {
+            clearInterval(interval)
+            is_right ? number_of_right++ : number_of_wrong++
+            document.getElementById("exam"+answers[current_number-1]).style.backgroundColor = "orange"
+            document.getElementById("result").innerHTML = is_right ? "맞았습니다" : "틀렸습니다"
+        }
+
+        function goToResult() {
+            document.getElementById("right").value = number_of_right
+            document.getElementById("wrong").value = number_of_wrong
+            document.getElementById("end").submit()
+        }
+
+        var chatSocket = new WebSocket('ws://' + window.location.host + '/ws/main/');
+
+        chatSocket.onmessage = function(e) {
+            var data = JSON.parse(e.data)
+            var number = data['message']
+            console.log('onmessage : ' + number)
+            current_number = number
+
+            if (number == 11) {
+                goToResult()
+            } else {
+                goToNextQuiz(number)
+            }
+        }
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly')
+        }
+
+    </script>
+    {% endif %}
+
+</body>
+</html>

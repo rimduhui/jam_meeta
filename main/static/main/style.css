@@ -1,0 +1,18 @@
+body {
+    background: white;
+}
+
+.exam {
+    background: #e0e0e0;
+    font-weight: bold;
+    font-size: 15px;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px;
+}
+
+.question {
+    font-weight: bold;
+    font-size: 20px;
+    margin: 10px;
+}
